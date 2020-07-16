@@ -1,0 +1,10 @@
+html
+  head
+    title test
+body
+  form(action='/auth/verify', method='POST')
+    p
+      | verify: 
+      input(type='number', name='verifycode', value='')
+
+    input(type='submit', value='Submit')

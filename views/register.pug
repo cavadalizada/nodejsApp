@@ -1,0 +1,18 @@
+html
+  head
+    title test
+body
+  form(action='/auth/register', method='POST')
+    p
+      | name: 
+      input(type='text', name='name', value='')
+
+      | email: 
+      input(type='email', name='email', value='')
+
+      | username: 
+      input(type='text', name='username', value='')
+      | password: 
+      input(type='password', name='password', value='')
+
+    input(type='submit', value='Submit')

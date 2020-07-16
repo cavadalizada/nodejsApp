@@ -1,0 +1,12 @@
+html
+  head
+    title test
+body
+  form(action='/auth/login', method='POST')
+    p
+      | username: 
+      input(type='text', name='username', value='')
+      |          password: 
+      input(type='password', name='password', value='')
+
+    input(type='submit', value='Submit')
