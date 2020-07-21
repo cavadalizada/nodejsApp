@@ -22,7 +22,7 @@ app.post('/register', authController.registerUser)
 
 if (config.get("OTPSignIn")){
   app.post('/sendOTP', authController.sendOTP)
-  app.post('/loginOTP', authController.loginOTP)
+  app.post('/login', authController.loginOTP)
 }else{
   app.post('/login', authController.loginUser)
 

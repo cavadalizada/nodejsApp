@@ -6,8 +6,6 @@ const config = require('config')
 
 const User = require('../models/User');
 
-const sendVerificationMail = require('./../mail/mail')
-
 const sendOTPMail = require('./../mail/OTPmail')
 
 exports.displayLogin = (req,res)=>{
@@ -100,7 +98,7 @@ exports.loginUser = async (req,res)=>{
         test.tokenList = test.tokenList.concat({ token })
         await test.save()
         console.log(test)
-        res.json({"username": test.username, "token":token})
+        return res.json({"username": test.username, "token":token})
          
         }catch (error) {
             console.log(error)
@@ -156,45 +154,27 @@ exports.registerUser = async (req,res)=>{
         return res.status(400).json({ msg: 'Please enter all fields' });
     }
     try {
-
-        var test = await User.findOne({username}).exec()
+        // maybe there is a better way to write below code
+        var test = await User.findOne({$or: [
+            {username},
+            {email}]}).exec()
         if(test!=null){
-        return res.status(400).json({ msg: 'Please choose a different username' });
+        return res.status(400).json({ msg: 'Username or email already taken' });
         }
-      test = await User.findOne({email}).exec()
-      if(test!=null){
-        return res.status(400).json({ msg: 'This email has already registered' });
+    
+      const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      if(!emailRegexp.test(email)){
+          return res.status(400).json({msg: 'Email incorrect'})
       }
-      }catch (error) {
+    
+      await User.registerUser(name, email, username, password)
+
+      return res.redirect('/auth/login')
+
+      
+    }catch (error) {
         console.log(error)
     }
-
-    const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    if(!emailRegexp.test(email)){
-        return res.status(400).json({msg: 'Email incorrect'})
-    }
-    const verifyCode = Math.floor(Math.random() *(9999-1000) + 1000)
-    console.log(verifyCode)
-
-    const salt = bcrypt.genSaltSync(10,'a')     // '12345678' + 'asdasf' => 'dsaa$adasdafa24dasfadasfadc'
-    var user = new User;
-
-    user.verifyCode = verifyCode
-    
-    sendVerificationMail(email,verifyCode);
-
-    user.isVerified = false;
-    user.name = name
-    user.email = email
-    user.username = username
-    user.password = bcrypt.hashSync(password,salt) 
-    user.salt = salt
-    
-
-    await user.save();
-
-
-    res.redirect('/auth/login')
 
 
 }

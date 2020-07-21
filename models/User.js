@@ -1,5 +1,11 @@
 const { Schema, model } = require('mongoose')
 
+const bcrypt = require(`bcrypt`)
+
+
+const sendVerificationMail = require('./../mail/mail')
+
+
 const UserSchema = new Schema({
   name: {
     type: String,
@@ -56,10 +62,31 @@ const UserSchema = new Schema({
   }
 });
 
+// Registers a user with given values
+UserSchema.statics.registerUser = async (name, email, username ,password) => {  // Statics are used like User.static
 
-UserSchema.methods.checkUser = async (username, email) => {  // Statics are used like User.static
+  var user = new User;
 
+  const salt = bcrypt.genSaltSync(10,'a')     // '12345678' + 'asdasf' => 'dsaa$adasdafa24dasfadasfadc'
+
+  const verifyCode = Math.floor(Math.random() *(9999-1000) + 1000)
+
+
+  user.verifyCode = verifyCode
+
+  sendVerificationMail(email,verifyCode);
+
+  user.isVerified = false;
+  user.name = name
+  user.email = email
+  user.username = username
+  user.password = bcrypt.hashSync(password,salt) 
+  user.salt = salt
   
+
+  await user.save();
+
+  return user
 }
 
 
