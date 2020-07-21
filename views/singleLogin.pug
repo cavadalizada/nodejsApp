@@ -1,0 +1,10 @@
+html
+  head
+    title test
+body
+  form(action='/auth/sendOTP', method='POST')
+    p
+      | email: 
+      input(type='text', name='email', value='')
+      |     
+    input(type='submit', value='Submit')

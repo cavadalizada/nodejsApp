@@ -8,7 +8,7 @@ const User = require('../models/User');
 
 const sendVerificationMail = require('./../mail/mail')
 
-
+const sendOTPMail = require('./../mail/OTPmail')
 
 exports.displayLogin = (req,res)=>{
 
@@ -20,6 +20,60 @@ exports.displayRegister = (req,res)=>{
 
     res.render('register.pug')
 }
+
+exports.displaySingleLogin = (req,res)=>{
+
+    res.render('singleLogin.pug')
+}
+
+exports.sendOTP = async (req,res)=>{
+const { email } = req.body;
+
+user = await User.findOne({email})
+
+if(user == null){
+    return res.status(400).json({msg:'No user with this email found.'})
+}
+
+const otpCode = Math.floor(Math.random() *(9999-1000) + 1000)
+
+user.otpCode = otpCode;
+await user.save();
+sendOTPMail(email,otpCode);
+
+res.json({msg:'Success'})
+}
+
+//Login One time Password 
+exports.loginOTP = async (req,res)=>{
+    const { otpCode,email} = req.body
+        
+    if (!otpCode) {
+        return res.status(400).json({ msg: 'Please provide an OTPCode' });
+    }
+    try {
+        const test = await User.findOne({email}).exec()
+    
+            if(test == null){
+                return res.status(400).json({msg: `Unable to login`})
+            } 
+            if(test.otpCode!=otpCode){
+            return res.status(400).json({ msg: 'Unable to login' });
+        }
+        test.otpCode = null;
+        const token = jwt.sign({username: test.username},config.get('JWTtoken'),{expiresIn:"1 day"});
+        test.tokenList = test.tokenList.concat({ token })
+        await test.save()
+        console.log(test)
+        res.json({"username": test.username, "token":token})
+         
+        }catch (error) {
+            console.log(error)
+        }
+
+
+}
+
 
 
 // Login controller
@@ -127,7 +181,7 @@ exports.registerUser = async (req,res)=>{
 
     user.verifyCode = verifyCode
     
-    //sendVerificationMail(email,verifyCode);
+    sendVerificationMail(email,verifyCode);
 
     user.isVerified = false;
     user.name = name

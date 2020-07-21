@@ -46,6 +46,10 @@ const UserSchema = new Schema({
   verifyCode:{
     type: Number,
   },
+  otpCode:{
+    type: Number,
+    default:0,
+  },
   register_date: {
     type: Date,
     default: Date.now
@@ -53,8 +57,9 @@ const UserSchema = new Schema({
 });
 
 
-UserSchema.statics.findUser = async (username, email) => {  // Statics are used like User.static
+UserSchema.methods.checkUser = async (username, email) => {  // Statics are used like User.static
 
+  
 }
 
 

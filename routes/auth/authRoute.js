@@ -6,20 +6,27 @@ const authController = require('./../../controllers/authController');
 const auth = require('./../../middleware/authMiddleware');
 const isVerified = require('../../middleware/isVerifiedMiddleware');
 
+const config = require('config')
 
 const app = Router();
 
-
-app.get('/login', authController.displayLogin)
-
+if (config.get("OTPSignIn")){
+  app.get('/login',authController.displaySingleLogin)
+}else{
+  app.get('/login', authController.displayLogin)
+}
 
 app.get('/register', authController.displayRegister)
 
 app.post('/register', authController.registerUser)
 
-app.post('/login', authController.loginUser)
+if (config.get("OTPSignIn")){
+  app.post('/sendOTP', authController.sendOTP)
+  app.post('/loginOTP', authController.loginOTP)
+}else{
+  app.post('/login', authController.loginUser)
 
-
+}
 app.get('/logout',auth,isVerified, authController.logoutUser)
 
 
